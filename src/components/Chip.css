@@ -1,0 +1,42 @@
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: 6px 14px;
+    border-radius: var(--radius-pill);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.chip--selected {
+    background: var(--accent-primary);
+    border-color: transparent;
+}
+
+.chip:active {
+    transform: scale(0.96);
+}
+
+.chip-icon {
+    font-size: 14px;
+    line-height: 1;
+}
+
+.chip-label {
+    line-height: 1;
+}
+
+.chip-dismiss {
+    margin-left: 2px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    line-height: 1;
+}

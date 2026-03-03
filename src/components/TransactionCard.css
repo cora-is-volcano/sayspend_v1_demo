@@ -1,0 +1,112 @@
+.tx-card {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.tx-card--compact {
+    border-radius: var(--radius-md);
+}
+
+.tx-card-body {
+    flex: 1;
+    min-width: 0;
+    padding: var(--space-md);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.tx-card-body:active {
+    background: var(--bg-primary);
+}
+
+/* Hide the round icon — we use inline icon in the row instead */
+.tx-card-icon {
+    display: none;
+}
+
+.tx-card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.tx-card-date {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.tx-card-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.tx-card-cat-icon {
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.tx-card-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    flex: 1;
+    min-width: 0;
+}
+
+.tx-card-amount {
+    font-family: 'SF Mono', 'Menlo', monospace;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.tx-card-amount--income {
+    color: var(--status-complete);
+}
+
+/* Action buttons column */
+.tx-card-actions {
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid var(--border-light);
+    flex-shrink: 0;
+}
+
+.tx-action-btn {
+    flex: 1;
+    width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+    color: var(--text-secondary);
+}
+
+.tx-action-btn:active {
+    transform: scale(0.9);
+}
+
+.tx-action-edit {
+    border-bottom: 1px solid var(--border-light);
+}
+
+.tx-action-edit:hover {
+    background: var(--bg-primary);
+}
+
+.tx-action-delete:hover {
+    background: rgba(255, 59, 48, 0.06);
+    color: var(--status-error);
+}

@@ -1,0 +1,33 @@
+.numpad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-sm);
+    padding: var(--space-md) 0;
+}
+
+.numpad-key {
+    height: 48px;
+    background: #F5F5F0;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 20px;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.1s ease;
+    -webkit-tap-highlight-color: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.numpad-key:active {
+    background: var(--accent-primary);
+    transform: scale(0.95);
+}
+
+.numpad-key--delete {
+    font-size: 18px;
+    color: var(--text-secondary);
+}

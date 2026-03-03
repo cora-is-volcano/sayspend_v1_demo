@@ -1,0 +1,116 @@
+.bottom-nav {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: var(--bg-dark);
+    border-radius: var(--radius-pill);
+    padding: 6px 12px;
+    box-shadow: var(--shadow-fab);
+    z-index: 900;
+    max-width: 380px;
+    width: calc(100% - 48px);
+}
+
+.nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 6px 0;
+    color: rgba(255, 255, 255, 0.5);
+    transition: color 0.2s;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.nav-item--active {
+    color: var(--text-on-dark);
+}
+
+.nav-label {
+    font-size: 10px;
+    font-weight: 500;
+}
+
+/* Voice FAB */
+.nav-fab {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--accent-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-primary);
+    box-shadow: var(--shadow-fab);
+    margin: -16px 8px 0;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    flex-shrink: 0;
+    position: relative;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.nav-fab:active,
+.nav-fab--recording {
+    transform: scale(1.12);
+    box-shadow: 0 0 0 8px rgba(232, 245, 163, 0.3), var(--shadow-fab);
+}
+
+.nav-fab--recording {
+    animation: fabPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes fabPulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 8px rgba(232, 245, 163, 0.3), var(--shadow-fab);
+    }
+
+    50% {
+        box-shadow: 0 0 0 16px rgba(232, 245, 163, 0.15), var(--shadow-fab);
+    }
+}
+
+/* Waveform inside FAB */
+.nav-fab-waves {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.wave {
+    width: 3px;
+    border-radius: 2px;
+    background: var(--text-primary);
+    animation: waveAnim 0.6s ease-in-out infinite alternate;
+}
+
+.wave-1 {
+    height: 12px;
+    animation-delay: 0s;
+}
+
+.wave-2 {
+    height: 20px;
+    animation-delay: 0.15s;
+}
+
+.wave-3 {
+    height: 14px;
+    animation-delay: 0.3s;
+}
+
+@keyframes waveAnim {
+    0% {
+        transform: scaleY(0.4);
+    }
+
+    100% {
+        transform: scaleY(1);
+    }
+}

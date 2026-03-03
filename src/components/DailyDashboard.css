@@ -1,0 +1,79 @@
+.daily-dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+    height: 65vh;
+    /* make it tall enough to scroll */
+}
+
+.daily-calendar-wrap {
+    background: var(--bg-primary);
+    border-radius: var(--radius-lg);
+    padding: 0 var(--space-md);
+    border: 1px solid var(--border-light);
+}
+
+.daily-summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-md);
+}
+
+.daily-summary-box {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+    padding: var(--space-md);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-light);
+}
+
+.daily-summary-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.daily-summary-value {
+    font-family: 'SF Mono', 'Menlo', monospace;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.daily-summary-value--income {
+    color: var(--status-complete);
+}
+
+.daily-summary-value--expense {
+    color: var(--text-primary);
+}
+
+.daily-list {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: var(--space-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.daily-list-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-xs);
+}
+
+.daily-empty {
+    font-size: 14px;
+    color: var(--text-secondary);
+    text-align: center;
+    padding: var(--space-lg) 0;
+}
+
+.daily-items {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
