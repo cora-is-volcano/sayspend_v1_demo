@@ -6,10 +6,13 @@
     display: flex;
     align-items: center;
     gap: 0;
-    background: var(--bg-dark);
+    background: var(--bg-nav);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border-light);
     border-radius: var(--radius-pill);
     padding: 6px 12px;
-    box-shadow: var(--shadow-fab);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
     z-index: 900;
     max-width: 380px;
     width: calc(100% - 48px);
@@ -22,18 +25,19 @@
     align-items: center;
     gap: 2px;
     padding: 6px 0;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--text-secondary);
     transition: color 0.2s;
     -webkit-tap-highlight-color: transparent;
 }
 
 .nav-item--active {
-    color: var(--text-on-dark);
+    color: var(--accent-primary);
 }
 
 .nav-label {
     font-size: 10px;
-    font-weight: 500;
+    font-weight: 600;
+    letter-spacing: 0.02em;
 }
 
 /* Voice FAB */
@@ -45,8 +49,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--text-primary);
-    box-shadow: var(--shadow-fab);
+    color: var(--text-on-accent);
+    box-shadow: 0 4px 24px rgba(212, 239, 106, 0.3);
     margin: -16px 8px 0;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     flex-shrink: 0;
@@ -57,7 +61,7 @@
 .nav-fab:active,
 .nav-fab--recording {
     transform: scale(1.12);
-    box-shadow: 0 0 0 8px rgba(232, 245, 163, 0.3), var(--shadow-fab);
+    box-shadow: 0 0 0 8px rgba(212, 239, 106, 0.25), 0 4px 24px rgba(212, 239, 106, 0.3);
 }
 
 .nav-fab--recording {
@@ -68,11 +72,11 @@
 
     0%,
     100% {
-        box-shadow: 0 0 0 8px rgba(232, 245, 163, 0.3), var(--shadow-fab);
+        box-shadow: 0 0 0 8px rgba(212, 239, 106, 0.25), 0 4px 24px rgba(212, 239, 106, 0.3);
     }
 
     50% {
-        box-shadow: 0 0 0 16px rgba(232, 245, 163, 0.15), var(--shadow-fab);
+        box-shadow: 0 0 0 18px rgba(212, 239, 106, 0.1), 0 4px 24px rgba(212, 239, 106, 0.3);
     }
 }
 
@@ -86,7 +90,7 @@
 .wave {
     width: 3px;
     border-radius: 2px;
-    background: var(--text-primary);
+    background: var(--text-on-accent);
     animation: waveAnim 0.6s ease-in-out infinite alternate;
 }
 

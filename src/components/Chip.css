@@ -2,11 +2,11 @@
     display: inline-flex;
     align-items: center;
     gap: var(--space-xs);
-    padding: 6px 14px;
+    padding: 8px 16px;
     border-radius: var(--radius-pill);
     background: var(--bg-secondary);
     border: 1px solid var(--border-light);
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 500;
     color: var(--text-primary);
     transition: all 0.2s ease;
@@ -15,9 +15,19 @@
     -webkit-tap-highlight-color: transparent;
 }
 
+.chip:hover {
+    background: var(--bg-elevated);
+    border-color: rgba(255, 255, 255, 0.15);
+}
+
 .chip--selected {
     background: var(--accent-primary);
     border-color: transparent;
+    color: var(--text-on-accent);
+}
+
+.chip--selected:hover {
+    background: var(--accent-primary-hover);
 }
 
 .chip:active {
@@ -36,7 +46,7 @@
 .chip-dismiss {
     margin-left: 2px;
     font-size: 14px;
-    color: var(--text-secondary);
+    color: rgba(13, 13, 13, 0.5);
     cursor: pointer;
     line-height: 1;
 }

@@ -13,23 +13,26 @@
 
 .edit-label {
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 600;
     color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 11px;
 }
 
 .edit-input {
     width: 100%;
-    padding: 12px 16px;
-    background: var(--bg-primary);
+    padding: 14px 16px;
+    background: var(--bg-secondary);
     border: 1px solid var(--border-light);
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-md);
     font-size: 14px;
     color: var(--text-primary);
     transition: border-color 0.2s;
 }
 
 .edit-input:focus {
-    border-color: var(--text-primary);
+    border-color: var(--accent-primary);
 }
 
 .edit-input::placeholder {
@@ -40,22 +43,22 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 16px;
-    background: var(--bg-primary);
+    padding: 14px 16px;
+    background: var(--bg-secondary);
     border: 1px solid var(--border-light);
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-md);
     cursor: pointer;
     transition: border-color 0.2s;
 }
 
 .edit-amount-row--active {
-    border-color: var(--text-primary);
+    border-color: var(--accent-primary);
 }
 
 .edit-amount-value {
-    font-family: 'SF Mono', 'Menlo', monospace;
-    font-size: 18px;
-    font-weight: 600;
+    font-family: 'Urbanist', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
     color: var(--text-primary);
 }
 
@@ -67,6 +70,9 @@
     font-weight: 500;
     color: var(--text-primary);
     cursor: pointer;
+    padding: 4px 10px;
+    background: var(--bg-elevated);
+    border-radius: var(--radius-pill);
 }
 
 .edit-currency-caret {
@@ -82,9 +88,9 @@
 
 .edit-date-toggle {
     padding: 10px 14px;
-    background: var(--bg-primary);
+    background: var(--bg-secondary);
     border: 1px solid var(--border-light);
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-md);
     font-size: 14px;
     font-weight: 500;
     color: var(--text-primary);
@@ -93,28 +99,30 @@
     gap: var(--space-sm);
     cursor: pointer;
     width: fit-content;
-    transition: background 0.15s;
+    transition: all 0.2s;
 }
 
 .edit-date-toggle:hover {
-    background: var(--border-light);
+    border-color: var(--accent-primary);
 }
 
 .edit-actions {
     display: flex;
     flex-direction: column;
     gap: var(--space-sm);
+    margin-top: var(--space-sm);
 }
 
 .edit-confirm-btn {
     width: 100%;
-    padding: 14px 24px;
+    padding: 16px 24px;
     background: var(--accent-primary);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-lg);
     font-size: 16px;
-    font-weight: 600;
-    color: var(--text-primary);
+    font-weight: 700;
+    color: var(--text-on-accent);
     transition: background 0.2s, transform 0.1s;
+    letter-spacing: -0.01em;
 }
 
 .edit-confirm-btn:hover {
@@ -129,13 +137,14 @@
     width: 100%;
     padding: 12px 24px;
     background: transparent;
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-lg);
     font-size: 14px;
     font-weight: 500;
     color: var(--status-error);
     transition: background 0.2s;
+    border: 1px solid rgba(248, 113, 113, 0.2);
 }
 
 .edit-delete-btn:hover {
-    background: rgba(255, 59, 48, 0.08);
+    background: rgba(248, 113, 113, 0.1);
 }

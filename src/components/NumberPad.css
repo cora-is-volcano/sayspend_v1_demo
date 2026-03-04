@@ -6,24 +6,30 @@
 }
 
 .numpad-key {
-    height: 48px;
-    background: #F5F5F0;
-    border: none;
-    border-radius: var(--radius-sm);
+    height: 52px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
     font-size: 20px;
-    font-weight: 500;
-    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-family: 'Urbanist', sans-serif;
     color: var(--text-primary);
     cursor: pointer;
-    transition: background 0.15s ease, transform 0.1s ease;
+    transition: all 0.15s ease;
     -webkit-tap-highlight-color: transparent;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
+.numpad-key:hover {
+    background: var(--bg-elevated);
+}
+
 .numpad-key:active {
     background: var(--accent-primary);
+    color: var(--text-on-accent);
+    border-color: var(--accent-primary);
     transform: scale(0.95);
 }
 

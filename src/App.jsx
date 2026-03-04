@@ -1,16 +1,19 @@
 import { useState, useRef, useCallback } from 'react';
 import { TransactionProvider, useTransactions } from './store/transactions';
+import { ThemeProvider } from './store/theme';
+import { SettingsProvider } from './store/settings';
 import BottomNav from './components/BottomNav';
 import EditSheet from './components/EditSheet';
 import HomePage from './pages/HomePage';
 import HistoryPage from './pages/HistoryPage';
+import ProfilePage from './pages/ProfilePage';
+import SettingsPage from './pages/SettingsPage';
 import './App.css';
 
 function AppContent() {
   const [page, setPage] = useState('home');
   const [isRecording, setIsRecording] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
-  const recordingTimer = useRef(null);
   const recordStartTime = useRef(null);
   const { addTransaction } = useTransactions();
 
@@ -55,18 +58,25 @@ function AppContent() {
     setAddOpen(false);
   }
 
+  // Bottom nav tabs — settings is reached from within profile
+  const navPages = ['home', 'history', 'profile'];
+
   return (
     <div className="app-shell">
       {page === 'home' && <HomePage isRecording={isRecording} />}
       {page === 'history' && <HistoryPage />}
+      {page === 'profile' && <ProfilePage onNavigate={setPage} />}
+      {page === 'settings' && <SettingsPage onBack={() => setPage('profile')} />}
 
-      <BottomNav
-        activePage={page}
-        onNavigate={setPage}
-        isRecording={isRecording}
-        onRecord={handlePointerDown}
-        onAdd={() => setAddOpen(true)}
-      />
+      {navPages.includes(page) || page === 'settings' ? (
+        <BottomNav
+          activePage={page}
+          onNavigate={setPage}
+          isRecording={isRecording}
+          onRecord={handlePointerDown}
+          onAdd={() => setAddOpen(true)}
+        />
+      ) : null}
 
       {/* Manual Add Sheet */}
       <EditSheet
@@ -81,8 +91,12 @@ function AppContent() {
 
 export default function App() {
   return (
-    <TransactionProvider>
-      <AppContent />
-    </TransactionProvider>
+    <ThemeProvider>
+      <SettingsProvider>
+        <TransactionProvider>
+          <AppContent />
+        </TransactionProvider>
+      </SettingsProvider>
+    </ThemeProvider>
   );
 }
