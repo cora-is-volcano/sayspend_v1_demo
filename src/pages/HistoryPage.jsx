@@ -1,173 +1,291 @@
 import { useState, useMemo } from 'react';
 import { useTransactions } from '../store/transactions';
-import TransactionCard from '../components/TransactionCard';
 import EditSheet from '../components/EditSheet';
-import BottomSheet from '../components/BottomSheet';
-import Chip from '../components/Chip';
 import './HistoryPage.css';
 
-const filterCategories = [
-    { id: 'sent', label: 'Sent', icon: '📤' },
-    { id: 'received', label: 'Received', icon: '📥' },
-    { id: 'withdrawal', label: 'Withdrawals', icon: '🏧' },
-    { id: 'topup', label: 'Top-up', icon: '➕' },
-    { id: 'card', label: 'Card payment', icon: '💳' },
-    { id: 'exchange', label: 'Exchange', icon: '💱' },
-];
+const VIEW_MODES = ['Day', 'Month', 'Year'];
+const DAY_LABELS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
 
-const filterCurrencies = [
-    { id: 'EUR', label: 'EUR', icon: '🇪🇺' },
-    { id: 'USD', label: 'USD', icon: '🇺🇸' },
-    { id: 'GBP', label: 'GBP', icon: '🇬🇧' },
-];
+function getTxDate(tx) {
+    if (tx.date) return tx.date;
+    if (tx.createdAt) return tx.createdAt.slice(0, 10);
+    return null;
+}
 
-const filterStatuses = [
-    { id: 'completed', label: 'Completed', icon: '✅' },
-    { id: 'pending', label: 'Pending', icon: '⏳' },
-    { id: 'failed', label: 'Failed', icon: '❌' },
-    { id: 'cancelled', label: 'Cancelled', icon: '🚫' },
-    { id: 'scheduled', label: 'Scheduled', icon: '📅' },
-];
+function toDateStr(y, m, d) {
+    return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+}
 
 export default function HistoryPage() {
     const { transactions, updateTransaction, deleteTransaction, categories } = useTransactions();
-    const [search, setSearch] = useState('');
     const [editItem, setEditItem] = useState(null);
-    const [filterOpen, setFilterOpen] = useState(false);
+    const [viewMode, setViewMode] = useState('Month');
+    const [calExpanded, setCalExpanded] = useState(false);
 
-    // Active filters
-    const [activeCategories, setActiveCategories] = useState([]);
-    const [activeCurrencies, setActiveCurrencies] = useState([]);
-    const [activeStatuses, setActiveStatuses] = useState([]);
+    const todayRaw = new Date();
+    const todayStr = toDateStr(todayRaw.getFullYear(), todayRaw.getMonth(), todayRaw.getDate());
 
-    const activeFilterCount = activeCategories.length + activeCurrencies.length + activeStatuses.length;
+    const [selYear, setSelYear] = useState(todayRaw.getFullYear());
+    const [selMonth, setSelMonth] = useState(todayRaw.getMonth());
+    const [selDay, setSelDay] = useState(todayRaw.getDate());
 
-    // Filter and search
+    // Set of YYYY-MM-DD strings that have records
+    const recordDates = useMemo(() => {
+        const s = new Set();
+        transactions.forEach(tx => { const d = getTxDate(tx); if (d) s.add(d); });
+        return s;
+    }, [transactions]);
+
+    // Filtered + sorted transactions
     const filtered = useMemo(() => {
-        let result = [...transactions];
+        return transactions
+            .filter(tx => {
+                const d = getTxDate(tx);
+                if (!d) return false;
+                const [y, m, day] = d.split('-').map(Number);
+                if (viewMode === 'Day') return y === selYear && m - 1 === selMonth && day === selDay;
+                if (viewMode === 'Month') return y === selYear && m - 1 === selMonth;
+                return y === selYear;
+            })
+            .sort((a, b) => (getTxDate(b) || '').localeCompare(getTxDate(a) || ''));
+    }, [transactions, viewMode, selYear, selMonth, selDay]);
 
-        if (search.trim()) {
-            const q = search.toLowerCase();
-            result = result.filter(tx =>
-                (tx.name || '').toLowerCase().includes(q) ||
-                (tx.merchant || '').toLowerCase().includes(q) ||
-                (tx.note || '').toLowerCase().includes(q)
-            );
-        }
-
-        if (activeCurrencies.length > 0) {
-            result = result.filter(tx => activeCurrencies.includes(tx.currency));
-        }
-
-        return result;
-    }, [transactions, search, activeCurrencies]);
-
-    // Group by month
-    const grouped = useMemo(() => {
-        const groups = {};
+    // Totals
+    const { income, expense } = useMemo(() => {
+        let income = 0, expense = 0;
         filtered.forEach(tx => {
-            const d = new Date(tx.date || tx.createdAt);
-            const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-            const label = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-            if (!groups[key]) groups[key] = { label, items: [] };
-            groups[key].items.push(tx);
+            const amt = Number(tx.amount) || 0;
+            if (tx.type === 'income') income += amt;
+            else if (tx.type === 'expense') expense += amt;
         });
-        return Object.entries(groups)
-            .sort(([a], [b]) => b.localeCompare(a))
-            .map(([, g]) => g);
+        return { income, expense };
     }, [filtered]);
 
-    function toggleFilter(list, setList, id) {
-        setList(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+    // Grouped for list
+    const groups = useMemo(() => {
+        const map = {};
+        filtered.forEach(tx => {
+            const d = getTxDate(tx);
+            if (!d) return;
+            let key, label;
+            if (viewMode === 'Year') {
+                const [y, m] = d.split('-').map(Number);
+                key = `${y}-${String(m).padStart(2, '0')}`;
+                label = new Date(y, m - 1, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+            } else {
+                key = d;
+                const [y, m, day] = d.split('-').map(Number);
+                label = new Date(y, m - 1, day).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+            }
+            if (!map[key]) map[key] = { label, items: [] };
+            map[key].items.push(tx);
+        });
+        return Object.entries(map).sort(([a], [b]) => b.localeCompare(a)).map(([, g]) => g);
+    }, [filtered, viewMode]);
+
+    // Period label
+    const periodLabel = useMemo(() => {
+        if (viewMode === 'Day') {
+            const d = new Date(selYear, selMonth, selDay);
+            const today = new Date(); today.setHours(0, 0, 0, 0); d.setHours(0, 0, 0, 0);
+            const diff = Math.round((today - d) / 86400000);
+            if (diff === 0) return 'Today';
+            if (diff === 1) return 'Yesterday';
+            return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+        }
+        if (viewMode === 'Month') return new Date(selYear, selMonth, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+        return String(selYear);
+    }, [viewMode, selYear, selMonth, selDay]);
+
+    // Week strip (Mon–Sun) centered on selected day
+    const weekDays = useMemo(() => {
+        const base = new Date(selYear, selMonth, selDay);
+        const dow = base.getDay();
+        const offset = dow === 0 ? -6 : 1 - dow;
+        return DAY_LABELS.map((label, i) => {
+            const d = new Date(base);
+            d.setDate(base.getDate() + offset + i);
+            const ds = toDateStr(d.getFullYear(), d.getMonth(), d.getDate());
+            return {
+                label, day: d.getDate(), year: d.getFullYear(), month: d.getMonth(),
+                dateStr: ds,
+                isToday: ds === todayStr,
+                isSelected: d.getFullYear() === selYear && d.getMonth() === selMonth && d.getDate() === selDay,
+                hasRecord: recordDates.has(ds),
+            };
+        });
+    }, [selYear, selMonth, selDay, recordDates, todayStr]);
+
+    // Full month grid (Mon-first)
+    const monthGrid = useMemo(() => {
+        const first = new Date(selYear, selMonth, 1);
+        const last = new Date(selYear, selMonth + 1, 0);
+        let startDow = first.getDay();
+        startDow = startDow === 0 ? 6 : startDow - 1;
+        const cells = Array(startDow).fill(null);
+        for (let d = 1; d <= last.getDate(); d++) {
+            const ds = toDateStr(selYear, selMonth, d);
+            cells.push({ day: d, dateStr: ds, isToday: ds === todayStr, isSelected: d === selDay, hasRecord: recordDates.has(ds) });
+        }
+        return cells;
+    }, [selYear, selMonth, selDay, recordDates, todayStr]);
+
+    function navigateMonth(dir) {
+        let m = selMonth + dir, y = selYear;
+        if (m < 0) { m = 11; y--; }
+        if (m > 11) { m = 0; y++; }
+        setSelMonth(m); setSelYear(y);
     }
 
-    function resetFilters() {
-        setActiveCategories([]);
-        setActiveCurrencies([]);
-        setActiveStatuses([]);
+    function pickDay(year, month, day) {
+        setSelYear(year); setSelMonth(month); setSelDay(day);
+        setCalExpanded(false);
+        if (viewMode !== 'Day') setViewMode('Day');
     }
-
-    function handleApplyFilters() {
-        setFilterOpen(false);
-    }
-
-    // Collect active filter chips for display
-    const activeChips = [
-        ...activeCategories.map(id => {
-            const f = filterCategories.find(c => c.id === id);
-            return f ? { ...f, group: 'cat' } : null;
-        }),
-        ...activeCurrencies.map(id => {
-            const f = filterCurrencies.find(c => c.id === id);
-            return f ? { ...f, group: 'cur' } : null;
-        }),
-        ...activeStatuses.map(id => {
-            const f = filterStatuses.find(c => c.id === id);
-            return f ? { ...f, group: 'stat' } : null;
-        }),
-    ].filter(Boolean);
 
     return (
-        <div className="history-page">
-            {/* Header */}
-            <header className="history-header">
-                <h1 className="history-title">Transaction</h1>
+        <div className="dashboard-page">
+            <header className="dashboard-header">
+                <h1 className="dashboard-title">Dashboard</h1>
             </header>
 
-            {/* Search */}
-            <div className="history-search">
-                <svg className="history-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="11" cy="11" r="8" />
-                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
-                <input
-                    className="history-search-input"
-                    placeholder="Search for transactions"
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                />
-                <button className="history-filter-btn" onClick={() => setFilterOpen(true)} aria-label="Filters">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <line x1="4" y1="6" x2="20" y2="6" />
-                        <line x1="8" y1="12" x2="16" y2="12" />
-                        <line x1="11" y1="18" x2="13" y2="18" />
-                    </svg>
-                </button>
+            {/* ── Calendar Zone ── */}
+            <div className="dashboard-cal-zone">
+                <div className="dashboard-cal-toprow">
+                    <div className="dashboard-view-tabs">
+                        {VIEW_MODES.map(mode => (
+                            <button
+                                key={mode}
+                                className={`dashboard-view-tab${viewMode === mode ? ' dashboard-view-tab--active' : ''}`}
+                                onClick={() => setViewMode(mode)}
+                            >
+                                {mode}
+                            </button>
+                        ))}
+                    </div>
+                    <button
+                        className={`dashboard-expand-btn${calExpanded ? ' dashboard-expand-btn--open' : ''}`}
+                        onClick={() => setCalExpanded(e => !e)}
+                        aria-label={calExpanded ? 'Collapse calendar' : 'Expand calendar'}
+                    >
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="6 9 12 15 18 9" />
+                        </svg>
+                    </button>
+                </div>
+
+                {/* Collapsed */}
+                {!calExpanded && (
+                    <div className="dashboard-cal-compact">
+                        {viewMode === 'Day' ? (
+                            <div className="dashboard-week-strip">
+                                {weekDays.map((d, i) => (
+                                    <button
+                                        key={i}
+                                        className={`dashboard-week-cell${d.isSelected ? ' dashboard-week-cell--selected' : ''}${d.isToday ? ' dashboard-week-cell--today' : ''}`}
+                                        onClick={() => { setSelYear(d.year); setSelMonth(d.month); setSelDay(d.day); }}
+                                    >
+                                        <span className="dwc-label">{d.label}</span>
+                                        <span className="dwc-num">{d.day}</span>
+                                        <span className={`dwc-dot${d.hasRecord ? ' dwc-dot--visible' : ''}`} />
+                                    </button>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="dashboard-period-strip">
+                                <button className="dashboard-nav-arrow" onClick={() => viewMode === 'Month' ? navigateMonth(-1) : setSelYear(y => y - 1)}>
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <polyline points="15 18 9 12 15 6" />
+                                    </svg>
+                                </button>
+                                <span className="dashboard-period-label">
+                                    {viewMode === 'Month'
+                                        ? new Date(selYear, selMonth, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+                                        : selYear}
+                                </span>
+                                <button className="dashboard-nav-arrow" onClick={() => viewMode === 'Month' ? navigateMonth(1) : setSelYear(y => y + 1)}>
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <polyline points="9 18 15 12 9 6" />
+                                    </svg>
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* Expanded full calendar */}
+                {calExpanded && (
+                    <div className="dashboard-cal-full">
+                        <div className="dashboard-cal-fullnav">
+                            <button className="dashboard-nav-arrow" onClick={() => navigateMonth(-1)}>
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <polyline points="15 18 9 12 15 6" />
+                                </svg>
+                            </button>
+                            <span className="dashboard-cal-monthlabel">
+                                {new Date(selYear, selMonth, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                            </span>
+                            <button className="dashboard-nav-arrow" onClick={() => navigateMonth(1)}>
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <polyline points="9 18 15 12 9 6" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div className="dashboard-cal-daynames">
+                            {DAY_LABELS.map(l => <span key={l} className="dcal-dayname">{l}</span>)}
+                        </div>
+                        <div className="dashboard-cal-grid">
+                            {monthGrid.map((cell, i) =>
+                                cell === null
+                                    ? <span key={`e${i}`} className="dcal-cell dcal-cell--empty" />
+                                    : (
+                                        <button
+                                            key={cell.dateStr}
+                                            className={`dcal-cell${cell.isSelected ? ' dcal-cell--selected' : ''}${cell.isToday ? ' dcal-cell--today' : ''}`}
+                                            onClick={() => pickDay(selYear, selMonth, cell.day)}
+                                        >
+                                            <span className="dcal-num">{cell.day}</span>
+                                            {cell.hasRecord && <span className="dcal-dot" />}
+                                        </button>
+                                    )
+                            )}
+                        </div>
+                    </div>
+                )}
             </div>
 
-            {/* Active filter chips */}
-            {activeChips.length > 0 && (
-                <div className="history-active-filters hide-scrollbar">
-                    {activeChips.map(chip => (
-                        <Chip
-                            key={chip.id}
-                            label={chip.label}
-                            icon={chip.icon}
-                            selected
-                            dismissible
-                            onToggle={() => {
-                                if (chip.group === 'cat') toggleFilter(activeCategories, setActiveCategories, chip.id);
-                                if (chip.group === 'cur') toggleFilter(activeCurrencies, setActiveCurrencies, chip.id);
-                                if (chip.group === 'stat') toggleFilter(activeStatuses, setActiveStatuses, chip.id);
-                            }}
-                        />
-                    ))}
+            {/* ── Summary Cards ── */}
+            <div className="dashboard-summary">
+                <div className="dashboard-summary-card dashboard-summary-card--expense">
+                    <span className="dsc-label">Expenses</span>
+                    <span className="dsc-amount dsc-amount--expense">
+                        −${expense.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    </span>
                 </div>
-            )}
+                <div className="dashboard-summary-card dashboard-summary-card--income">
+                    <span className="dsc-label">Income</span>
+                    <span className="dsc-amount dsc-amount--income">
+                        +${income.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    </span>
+                </div>
+            </div>
 
-            {/* Transaction List */}
-            <div className="history-list hide-scrollbar">
-                {grouped.length === 0 ? (
-                    <div className="history-empty">
-                        <p className="history-empty-text">
-                            {transactions.length === 0 ? 'No transactions yet.\nStart recording with the voice button!' : 'No matching transactions found.'}
-                        </p>
+            {/* ── Transaction List ── */}
+            <div className="dashboard-list hide-scrollbar">
+                <div className="dashboard-list-meta">
+                    <span className="dlm-period">{periodLabel}</span>
+                    <span className="dlm-count">{filtered.length} records</span>
+                </div>
+
+                {filtered.length === 0 ? (
+                    <div className="dashboard-empty">
+                        <p className="dashboard-empty-text">No records for this period</p>
                     </div>
                 ) : (
-                    grouped.map(group => (
-                        <div key={group.label} className="history-group">
-                            <h3 className="history-group-label">{group.label}</h3>
-                            <div className="history-group-items">
+                    groups.map(group => (
+                        <div key={group.label} className="dashboard-group">
+                            <h3 className="dashboard-group-label">{group.label}</h3>
+                            <div className="dashboard-group-items">
                                 {group.items.map(tx => (
                                     <div key={tx.id} className="history-item">
                                         <div className="history-item-icon" style={{ background: tx.type === 'income' ? 'var(--chip-mint)' : 'var(--chip-lavender)' }}>
@@ -175,15 +293,15 @@ export default function HistoryPage() {
                                         </div>
                                         <div className="history-item-info">
                                             <span className="history-item-name truncate">{tx.name || tx.merchant || 'Untitled'}</span>
-                                            <span className="history-item-date">{formatHistoryDate(tx.date)}</span>
+                                            <span className="history-item-date">{formatDate(tx.date)}</span>
                                         </div>
                                         <div className="history-item-right">
                                             <span className={`history-item-amount ${tx.type === 'income' ? 'history-item-amount--income' : tx.type === 'expense' ? 'history-item-amount--expense' : ''}`}>
-                                                {tx.type === 'income' ? '+' : '-'}${Number(tx.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                                                {tx.type === 'income' ? '+' : '−'}${Number(tx.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                                             </span>
-                                            <span className="history-item-type">{tx.type === 'income' ? 'Received' : 'Send'}</span>
+                                            <span className="history-item-type">{tx.type === 'income' ? 'Received' : 'Sent'}</span>
                                         </div>
-                                        <button className="history-item-tap" onClick={() => setEditItem(tx)} aria-label="Edit" />
+                                        <button className="history-item-tap" onClick={() => setEditItem(tx)} aria-label="Edit transaction" />
                                     </div>
                                 ))}
                             </div>
@@ -192,108 +310,24 @@ export default function HistoryPage() {
                 )}
             </div>
 
-            {/* Filter Bottom Sheet */}
-            <BottomSheet open={filterOpen} onClose={() => setFilterOpen(false)} title="Filters">
-                <div className="filter-form">
-                    <div className="filter-section">
-                        <h4 className="filter-section-label">Categories</h4>
-                        <div className="filter-chips">
-                            {filterCategories.map(f => (
-                                <Chip
-                                    key={f.id}
-                                    label={f.label}
-                                    icon={f.icon}
-                                    selected={activeCategories.includes(f.id)}
-                                    onToggle={() => toggleFilter(activeCategories, setActiveCategories, f.id)}
-                                    dismissible
-                                />
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="filter-section">
-                        <h4 className="filter-section-label">Currencies</h4>
-                        <div className="filter-chips">
-                            {filterCurrencies.map(f => (
-                                <Chip
-                                    key={f.id}
-                                    label={f.label}
-                                    icon={f.icon}
-                                    selected={activeCurrencies.includes(f.id)}
-                                    onToggle={() => toggleFilter(activeCurrencies, setActiveCurrencies, f.id)}
-                                    dismissible
-                                />
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="filter-section">
-                        <h4 className="filter-section-label">Status</h4>
-                        <div className="filter-chips">
-                            {filterStatuses.map(f => (
-                                <Chip
-                                    key={f.id}
-                                    label={f.label}
-                                    icon={f.icon}
-                                    selected={activeStatuses.includes(f.id)}
-                                    onToggle={() => toggleFilter(activeStatuses, setActiveStatuses, f.id)}
-                                    dismissible
-                                />
-                            ))}
-                        </div>
-                    </div>
-
-                    <div className="filter-section">
-                        <h4 className="filter-section-label">Period</h4>
-                        <div className="filter-period">
-                            <select className="filter-select">
-                                <option value="">select a year</option>
-                                <option value="2026">2026</option>
-                                <option value="2025">2025</option>
-                            </select>
-                            <select className="filter-select">
-                                <option value="">select a month</option>
-                                {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'].map((m, i) => (
-                                    <option key={m} value={i + 1}>{m}</option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
-
-                    <div className="filter-actions">
-                        <button className="filter-reset-btn" onClick={resetFilters}>Reset</button>
-                        <button className="filter-apply-btn" onClick={handleApplyFilters}>
-                            Apply{activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
-                        </button>
-                    </div>
-                </div>
-            </BottomSheet>
-
-            {/* Edit Sheet */}
             <EditSheet
                 open={!!editItem}
                 onClose={() => setEditItem(null)}
                 item={editItem}
-                onSave={(updated) => {
-                    updateTransaction(updated.id, updated);
-                    setEditItem(null);
-                }}
-                onDelete={(id) => {
-                    deleteTransaction(id);
-                    setEditItem(null);
-                }}
+                onSave={(updated) => { updateTransaction(updated.id, updated); setEditItem(null); }}
+                onDelete={(id) => { deleteTransaction(id); setEditItem(null); }}
             />
         </div>
     );
 }
 
-function formatHistoryDate(dateStr) {
+function formatDate(dateStr) {
     if (!dateStr) return '';
-    const d = new Date(dateStr + 'T00:00:00');
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const diff = Math.round((today - d) / (1000 * 60 * 60 * 24));
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const date = new Date(y, m - 1, d);
+    const today = new Date(); today.setHours(0, 0, 0, 0); date.setHours(0, 0, 0, 0);
+    const diff = Math.round((today - date) / 86400000);
     if (diff === 0) return 'Today';
     if (diff === 1) return 'Yesterday';
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
