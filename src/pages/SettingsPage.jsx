@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTheme } from '../store/theme';
 import { useSettings, CURRENCIES } from '../store/settings';
 import BottomSheet from '../components/BottomSheet';
+import { Sun, Moon, DollarSign, Bell, FileDown, Info } from 'lucide-react';
 import './SettingsPage.css';
 
 export default function SettingsPage({ onBack }) {
@@ -46,7 +47,7 @@ export default function SettingsPage({ onBack }) {
                     <div className="settings-row" onClick={toggleTheme}>
                         <div className="settings-row-left">
                             <div className="settings-row-icon">
-                                {isDark ? '🌙' : '☀️'}
+                                {isDark ? <Moon size={18} strokeWidth={1.75} /> : <Sun size={18} strokeWidth={1.75} />}
                             </div>
                             <div className="settings-row-text">
                                 <span className="settings-row-title">Dark Mode</span>
@@ -66,19 +67,23 @@ export default function SettingsPage({ onBack }) {
                     <h3 className="settings-section-label">General</h3>
                     <div className="settings-row" onClick={() => setCurrencyOpen(true)}>
                         <div className="settings-row-left">
-                            <div className="settings-row-icon">💰</div>
+                            <div className="settings-row-icon"><DollarSign size={18} strokeWidth={1.75} /></div>
                             <div className="settings-row-text">
                                 <span className="settings-row-title">Default Currency</span>
                                 <span className="settings-row-desc">
-                                    {selectedCurrency.flag} {selectedCurrency.code} — {selectedCurrency.name}
+                                    {selectedCurrency.code} — {selectedCurrency.name}
                                 </span>
                             </div>
                         </div>
-                        <span className="settings-row-chevron">›</span>
+                        <div className="settings-currency-preview">
+                            <span className="settings-currency-flag">{selectedCurrency.flag}</span>
+                            <span className="settings-currency-code">{selectedCurrency.code}</span>
+                            <span className="settings-row-chevron">›</span>
+                        </div>
                     </div>
                     <div className="settings-row">
                         <div className="settings-row-left">
-                            <div className="settings-row-icon">🔔</div>
+                            <div className="settings-row-icon"><Bell size={18} strokeWidth={1.75} /></div>
                             <div className="settings-row-text">
                                 <span className="settings-row-title">Notifications</span>
                                 <span className="settings-row-desc">Manage alerts</span>
@@ -88,7 +93,7 @@ export default function SettingsPage({ onBack }) {
                     </div>
                     <div className="settings-row">
                         <div className="settings-row-left">
-                            <div className="settings-row-icon">📊</div>
+                            <div className="settings-row-icon"><FileDown size={18} strokeWidth={1.75} /></div>
                             <div className="settings-row-text">
                                 <span className="settings-row-title">Export Data</span>
                                 <span className="settings-row-desc">CSV, PDF</span>
@@ -103,7 +108,7 @@ export default function SettingsPage({ onBack }) {
                     <h3 className="settings-section-label">About</h3>
                     <div className="settings-row">
                         <div className="settings-row-left">
-                            <div className="settings-row-icon">ℹ️</div>
+                            <div className="settings-row-icon"><Info size={18} strokeWidth={1.75} /></div>
                             <div className="settings-row-text">
                                 <span className="settings-row-title">Version</span>
                                 <span className="settings-row-desc">1.0.0</span>
@@ -125,7 +130,7 @@ export default function SettingsPage({ onBack }) {
                                 setCurrencyOpen(false);
                             }}
                         >
-                            <span className="currency-flag">{c.flag}</span>
+                            <span className="currency-flag-icon">{c.flag}</span>
                             <div className="currency-info">
                                 <span className="currency-name">{c.name}</span>
                                 <span className="currency-code-badge">{c.code} · {c.symbol}</span>

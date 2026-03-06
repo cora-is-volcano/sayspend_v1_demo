@@ -1,22 +1,34 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import './BottomSheet.css';
 
 export default function BottomSheet({ open, onClose, title, children }) {
     const [visible, setVisible] = useState(false);
     const [animating, setAnimating] = useState(false);
+    const prevOpenRef = useRef(false);
 
+    // Track open → closed transitions with an animation delay
+    /* eslint-disable react-hooks/set-state-in-effect -- intentional: must mount DOM synchronously before animating */
     useEffect(() => {
-        if (open) {
+        if (open && !prevOpenRef.current) {
+            // Opening: mount immediately, animate on next frame
             setVisible(true);
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => setAnimating(true));
+            const raf1 = requestAnimationFrame(() => {
+                const raf2 = requestAnimationFrame(() => setAnimating(true));
+                return () => cancelAnimationFrame(raf2);
             });
-        } else {
+            prevOpenRef.current = true;
+            return () => cancelAnimationFrame(raf1);
+        }
+
+        if (!open && prevOpenRef.current) {
+            // Closing: animate out, then unmount after transition
             setAnimating(false);
+            prevOpenRef.current = false;
             const timer = setTimeout(() => setVisible(false), 300);
             return () => clearTimeout(timer);
         }
     }, [open]);
+    /* eslint-enable react-hooks/set-state-in-effect */
 
     if (!visible) return null;
 

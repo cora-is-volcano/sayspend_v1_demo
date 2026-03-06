@@ -3,10 +3,13 @@ import BottomSheet from './BottomSheet';
 import CalendarPicker from './CalendarPicker';
 import TransactionCard from './TransactionCard';
 import { useTransactions } from '../store/transactions';
+import { useSettings, CURRENCIES } from '../store/settings';
 import './DailyDashboard.css';
 
 export default function DailyDashboard({ open, onClose, onEdit }) {
     const { transactions } = useTransactions();
+    const { settings } = useSettings();
+    const sym = CURRENCIES.find(c => c.code === settings.currency)?.symbol ?? '$';
     const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
 
     const { items, totalIncome, totalExpense } = useMemo(() => {
@@ -28,13 +31,13 @@ export default function DailyDashboard({ open, onClose, onEdit }) {
                     <div className="daily-summary-box">
                         <span className="daily-summary-label">Income</span>
                         <span className="daily-summary-value daily-summary-value--income">
-                            +${totalIncome.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            +{sym}{totalIncome.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                     </div>
                     <div className="daily-summary-box">
                         <span className="daily-summary-label">Expense</span>
                         <span className="daily-summary-value daily-summary-value--expense">
-                            -${totalExpense.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            -{sym}{totalExpense.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                     </div>
                 </div>

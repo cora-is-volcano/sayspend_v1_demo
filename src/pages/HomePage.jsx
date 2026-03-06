@@ -5,7 +5,7 @@ import EditSheet from '../components/EditSheet';
 import DailyDashboard from '../components/DailyDashboard';
 import './HomePage.css';
 
-export default function HomePage({ isRecording, onStopRecording }) {
+export default function HomePage({ isRecording }) {
     const { messages, addMessage, getNextDemoResponse, saveAllItems, updateTransaction, deleteTransaction, removeMessageItem } = useTransactions();
     const chatRef = useRef(null);
     const [editItem, setEditItem] = useState(null);
@@ -20,12 +20,7 @@ export default function HomePage({ isRecording, onStopRecording }) {
         }
     }, [messages]);
 
-    // When recording stops, simulate voice flow
-    useEffect(() => {
-        if (onStopRecording && !isRecording) {
-            // Check if we just stopped recording (handled by parent)
-        }
-    }, [isRecording, onStopRecording]);
+
 
     const handleSendVoice = useCallback((duration) => {
         // Add user voice message
@@ -46,7 +41,7 @@ export default function HomePage({ isRecording, onStopRecording }) {
                 items: response.items,
             });
         }, 1200);
-    }, [addMessage, getNextDemoResponse]);
+    }, [addMessage, getNextDemoResponse, saveAllItems]);
 
     // Expose handleSendVoice to parent
     useEffect(() => {

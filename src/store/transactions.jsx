@@ -24,31 +24,31 @@ const demoResponses = [
   {
     text: "Got it! I found 3 items from your recording:",
     items: [
-      { name: 'Starbucks Coffee', amount: 5.80, currency: 'USD', category: 'food', type: 'expense', merchant: 'Starbucks', date: new Date().toISOString().split('T')[0] },
-      { name: 'Lunch at Chipotle', amount: 12.50, currency: 'USD', category: 'food', type: 'expense', merchant: 'Chipotle', date: new Date().toISOString().split('T')[0] },
-      { name: 'Uber ride', amount: 15.00, currency: 'USD', category: 'transport', type: 'expense', merchant: 'Uber', date: new Date().toISOString().split('T')[0] },
+      { name: 'Starbucks Coffee', amount: 5.80, currency: 'USD', category: 'food', type: 'expense', merchant: 'Starbucks', date: '__TODAY__' },
+      { name: 'Lunch at Chipotle', amount: 12.50, currency: 'USD', category: 'food', type: 'expense', merchant: 'Chipotle', date: '__TODAY__' },
+      { name: 'Uber ride', amount: 15.00, currency: 'USD', category: 'transport', type: 'expense', merchant: 'Uber', date: '__TODAY__' },
     ]
   },
   {
     text: "Here's what I picked up — 2 items:",
     items: [
-      { name: 'Grocery shopping', amount: 67.30, currency: 'USD', category: 'essentials', type: 'expense', merchant: 'Whole Foods', date: new Date().toISOString().split('T')[0] },
-      { name: 'Netflix subscription', amount: 15.99, currency: 'USD', category: 'entertainment', type: 'expense', merchant: 'Netflix', date: new Date().toISOString().split('T')[0] },
+      { name: 'Grocery shopping', amount: 67.30, currency: 'USD', category: 'essentials', type: 'expense', merchant: 'Whole Foods', date: '__TODAY__' },
+      { name: 'Netflix subscription', amount: 15.99, currency: 'USD', category: 'entertainment', type: 'expense', merchant: 'Netflix', date: '__TODAY__' },
     ]
   },
   {
     text: "Recorded! Found 2 transactions:",
     items: [
-      { name: 'Salary deposit', amount: 4500.00, currency: 'USD', category: 'income', type: 'income', merchant: 'Employer', date: new Date().toISOString().split('T')[0] },
-      { name: 'Rent payment', amount: 1800.00, currency: 'USD', category: 'essentials', type: 'expense', merchant: 'Landlord', date: new Date().toISOString().split('T')[0] },
+      { name: 'Salary deposit', amount: 4500.00, currency: 'USD', category: 'income', type: 'income', merchant: 'Employer', date: '__TODAY__' },
+      { name: 'Rent payment', amount: 1800.00, currency: 'USD', category: 'essentials', type: 'expense', merchant: 'Landlord', date: '__TODAY__' },
     ]
   },
   {
     text: "Got it! Here are 3 items:",
     items: [
-      { name: 'Movie tickets', amount: 24.00, currency: 'USD', category: 'entertainment', type: 'expense', merchant: 'AMC', date: new Date().toISOString().split('T')[0] },
-      { name: 'Popcorn & drinks', amount: 18.50, currency: 'USD', category: 'food', type: 'expense', merchant: 'AMC', date: new Date().toISOString().split('T')[0] },
-      { name: 'Parking', amount: 8.00, currency: 'USD', category: 'transport', type: 'expense', merchant: 'ParkMobile', date: new Date().toISOString().split('T')[0] },
+      { name: 'Movie tickets', amount: 24.00, currency: 'USD', category: 'entertainment', type: 'expense', merchant: 'AMC', date: '__TODAY__' },
+      { name: 'Popcorn & drinks', amount: 18.50, currency: 'USD', category: 'food', type: 'expense', merchant: 'AMC', date: '__TODAY__' },
+      { name: 'Parking', amount: 8.00, currency: 'USD', category: 'transport', type: 'expense', merchant: 'ParkMobile', date: '__TODAY__' },
     ]
   },
 ];
@@ -104,10 +104,15 @@ export function TransactionProvider({ children }) {
   const getNextDemoResponse = useCallback(() => {
     const response = demoResponses[demoIndex % demoResponses.length];
     setDemoIndex(prev => prev + 1);
-    // Add unique IDs to items
+    const today = new Date().toISOString().split('T')[0];
+    // Add unique IDs and resolve date placeholders
     return {
       ...response,
-      items: response.items.map(item => ({ ...item, id: generateId() }))
+      items: response.items.map(item => ({
+        ...item,
+        id: generateId(),
+        date: item.date === '__TODAY__' ? today : item.date,
+      }))
     };
   }, [demoIndex]);
 

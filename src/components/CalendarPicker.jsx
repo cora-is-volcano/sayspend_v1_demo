@@ -41,7 +41,7 @@ export default function CalendarPicker({ value, onChange }) {
         <div className="cal">
             <div className="cal-header">
                 <span className="cal-month-label">
-                    {selected.getDate()} {MONTHS[viewMonth].substring(0, 3)}, {String(viewYear).substring(2)} {DAYS[new Date(viewYear, viewMonth, selected.getDate() <= days.length ? selected.getDate() : 1).getDay()] + (selected.getDate() <= days.length ? '' : '')}
+                    {MONTHS[viewMonth].substring(0, 3)} {viewYear}
                 </span>
                 <div className="cal-nav">
                     <button className="cal-nav-btn" onClick={prev}>‹</button>

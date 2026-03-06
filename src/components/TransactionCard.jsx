@@ -1,25 +1,25 @@
-import { useTransactions } from '../store/transactions';
+import { getCategoryIcon } from '../lib/categoryIcons';
+import { CURRENCIES } from '../store/settings';
 import './TransactionCard.css';
 
 export default function TransactionCard({ item, onEdit, onDelete, compact }) {
-    const { categories } = useTransactions();
-    const cat = categories.find(c => c.id === item.category) || categories[categories.length - 1];
     const isIncome = item.type === 'income';
     const sign = isIncome ? '+' : '-';
+    const currencySymbol = CURRENCIES.find(c => c.code === item.currency)?.symbol ?? '$';
 
     return (
         <div className={`tx-card ${compact ? 'tx-card--compact' : ''}`}>
             <div className="tx-card-body" onClick={() => onEdit?.(item)}>
                 <div className="tx-card-icon" style={{ background: isIncome ? 'var(--chip-mint)' : 'var(--chip-lavender)' }}>
-                    {cat.icon}
+                    {getCategoryIcon(item.category, 20)}
                 </div>
                 <div className="tx-card-info">
                     <span className="tx-card-date">{item.date}</span>
                     <div className="tx-card-row">
-                        <span className="tx-card-cat-icon">{cat.icon}</span>
+                        <span className="tx-card-cat-icon">{getCategoryIcon(item.category, 13)}</span>
                         <span className="tx-card-name truncate">{item.name || item.merchant || 'Untitled'}</span>
                         <span className={`tx-card-amount ${isIncome ? 'tx-card-amount--income' : ''}`}>
-                            {sign} $ {Number(item.amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            {sign} {currencySymbol}{Number(item.amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                     </div>
                 </div>

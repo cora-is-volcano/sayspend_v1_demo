@@ -15,9 +15,11 @@ function AppContent() {
   const [isRecording, setIsRecording] = useState(false);
   const [addOpen, setAddOpen] = useState(false);
   const recordStartTime = useRef(null);
+  const isRecordingRef = useRef(false);
   const { addTransaction } = useTransactions();
 
   const handleRecordStart = useCallback(() => {
+    isRecordingRef.current = true;
     setIsRecording(true);
     recordStartTime.current = Date.now();
 
@@ -26,7 +28,8 @@ function AppContent() {
   }, []);
 
   const handleRecordEnd = useCallback(() => {
-    if (!isRecording) return;
+    if (!isRecordingRef.current) return;
+    isRecordingRef.current = false;
     setIsRecording(false);
 
     const duration = Math.round((Date.now() - (recordStartTime.current || Date.now())) / 1000);
@@ -36,7 +39,7 @@ function AppContent() {
     setTimeout(() => {
       window.__sayspend_sendVoice?.(finalDuration);
     }, 100);
-  }, [isRecording]);
+  }, []);
 
   // Pointer events for press-and-hold
   const handlePointerDown = useCallback((e) => {

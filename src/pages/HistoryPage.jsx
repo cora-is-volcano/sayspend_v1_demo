@@ -1,6 +1,8 @@
 import { useState, useMemo } from 'react';
 import { useTransactions } from '../store/transactions';
+import { useSettings, CURRENCIES } from '../store/settings';
 import EditSheet from '../components/EditSheet';
+import { getCategoryIcon } from '../lib/categoryIcons';
 import './HistoryPage.css';
 
 const VIEW_MODES = ['Day', 'Month', 'Year'];
@@ -17,7 +19,9 @@ function toDateStr(y, m, d) {
 }
 
 export default function HistoryPage() {
-    const { transactions, updateTransaction, deleteTransaction, categories } = useTransactions();
+    const { transactions, updateTransaction, deleteTransaction } = useTransactions();
+    const { settings } = useSettings();
+    const sym = CURRENCIES.find(c => c.code === settings.currency)?.symbol ?? '$';
     const [editItem, setEditItem] = useState(null);
     const [viewMode, setViewMode] = useState('Month');
     const [calExpanded, setCalExpanded] = useState(false);
@@ -259,13 +263,13 @@ export default function HistoryPage() {
                 <div className="dashboard-summary-card dashboard-summary-card--expense">
                     <span className="dsc-label">Expenses</span>
                     <span className="dsc-amount dsc-amount--expense">
-                        −${expense.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                        −{sym}{expense.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </span>
                 </div>
                 <div className="dashboard-summary-card dashboard-summary-card--income">
                     <span className="dsc-label">Income</span>
                     <span className="dsc-amount dsc-amount--income">
-                        +${income.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                        +{sym}{income.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </span>
                 </div>
             </div>
@@ -289,7 +293,7 @@ export default function HistoryPage() {
                                 {group.items.map(tx => (
                                     <div key={tx.id} className="history-item">
                                         <div className="history-item-icon" style={{ background: tx.type === 'income' ? 'var(--chip-mint)' : 'var(--chip-lavender)' }}>
-                                            {(categories.find(c => c.id === tx.category) || categories[categories.length - 1]).icon}
+                                            {getCategoryIcon(tx.category, 20)}
                                         </div>
                                         <div className="history-item-info">
                                             <span className="history-item-name truncate">{tx.name || tx.merchant || 'Untitled'}</span>
@@ -297,7 +301,7 @@ export default function HistoryPage() {
                                         </div>
                                         <div className="history-item-right">
                                             <span className={`history-item-amount ${tx.type === 'income' ? 'history-item-amount--income' : tx.type === 'expense' ? 'history-item-amount--expense' : ''}`}>
-                                                {tx.type === 'income' ? '+' : '−'}${Number(tx.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                                                {tx.type === 'income' ? '+' : '−'}{CURRENCIES.find(c => c.code === tx.currency)?.symbol ?? sym}{Number(tx.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                                             </span>
                                             <span className="history-item-type">{tx.type === 'income' ? 'Received' : 'Sent'}</span>
                                         </div>

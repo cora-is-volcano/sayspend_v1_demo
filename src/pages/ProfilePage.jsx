@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useTransactions } from '../store/transactions';
 import { useSettings, CURRENCIES } from '../store/settings';
+import { Banknote, Target, Settings } from 'lucide-react';
 import './ProfilePage.css';
 
 function fmtAmount(n) {
@@ -11,13 +12,15 @@ export default function ProfilePage({ onNavigate }) {
     const { transactions } = useTransactions();
     const { settings, updateSettings } = useSettings();
 
-    const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
+    // Stable month/year — only changes when the component first mounts
+    const [currentMonth] = useState(() => new Date().getMonth());
+    const [currentYear] = useState(() => new Date().getFullYear());
 
     const stats = useMemo(() => {
         const thisMonth = transactions.filter(tx => {
-            const d = new Date(tx.date || tx.createdAt);
+            const d = tx.date
+                ? new Date(tx.date + 'T00:00:00')
+                : new Date(tx.createdAt);
             return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
         });
         const income = thisMonth
@@ -29,7 +32,7 @@ export default function ProfilePage({ onNavigate }) {
         return { income, expenses, net: income - expenses };
     }, [transactions, currentMonth, currentYear]);
 
-    const monthLabel = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    const monthLabel = new Date(currentYear, currentMonth, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
     const currency = CURRENCIES.find(c => c.code === settings.currency) || CURRENCIES[0];
     const sym = currency.symbol;
 
@@ -113,7 +116,7 @@ export default function ProfilePage({ onNavigate }) {
                     <h3 className="profile-section-label">Financial Settings</h3>
                     <div className="profile-fields-card">
                         <div className="profile-field">
-                            <div className="profile-field-icon">💵</div>
+                            <div className="profile-field-icon"><Banknote size={18} strokeWidth={1.75} /></div>
                             <div className="profile-field-body">
                                 <label className="profile-field-label">Monthly Income</label>
                                 <div className="profile-field-input-wrap">
@@ -132,7 +135,7 @@ export default function ProfilePage({ onNavigate }) {
                         </div>
                         <div className="profile-field-divider" />
                         <div className="profile-field">
-                            <div className="profile-field-icon">🎯</div>
+                            <div className="profile-field-icon"><Target size={18} strokeWidth={1.75} /></div>
                             <div className="profile-field-body">
                                 <label className="profile-field-label">Spending Budget</label>
                                 <div className="profile-field-input-wrap">
@@ -156,7 +159,7 @@ export default function ProfilePage({ onNavigate }) {
                 <div className="profile-section">
                     <button className="profile-nav-row" onClick={() => onNavigate('settings')}>
                         <div className="profile-nav-left">
-                            <div className="profile-nav-icon">⚙️</div>
+                            <div className="profile-nav-icon"><Settings size={18} strokeWidth={1.75} /></div>
                             <span className="profile-nav-title">Settings</span>
                         </div>
                         <span className="profile-nav-chevron">›</span>
